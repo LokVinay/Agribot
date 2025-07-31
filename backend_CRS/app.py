@@ -7,6 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # ✅ STEP 1: Initialize app
 app = FastAPI()
+@app.get("/")
+def root():
+    return {"message": "Welcome to Agribot API. Use /recommend or /weather endpoints."}
+
 
 # ✅ STEP 2: Allow CORS (so frontend like React can call this API)
 app.add_middleware(
