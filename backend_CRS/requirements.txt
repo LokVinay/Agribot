@@ -4,4 +4,6 @@ gunicorn
 numpy
 scikit-learn==1.5.1
 pydantic
+requests
+
 
