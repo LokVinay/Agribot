@@ -1,6 +1,7 @@
 fastapi
-uvicorn
-numpy
-pydantic
-scikit-learn
+uvicorn[standard]
 gunicorn
+numpy
+scikit-learn
+pydantic
+
