@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
 import logo from "./assets/logo.png";
@@ -25,8 +25,14 @@ function App() {
   };
 
   const fetchWeather = async () => {
+    const apiKey = process.env.REACT_APP_OPENWEATHER_API_KEY;
+
+    if (!apiKey) {
+      setError("API key not found. Please check your .env file.");
+      return;
+    }
+
     try {
-      const apiKey = process.env.REACT_APP_OPENWEATHER_API_KEY;
       let weatherUrl = "";
 
       if (isLocationAuto) {
@@ -36,6 +42,7 @@ function App() {
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
               weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+              console.log("Auto Location URL:", weatherUrl);
               const response = await axios.get(weatherUrl);
               handleWeatherData(response.data);
             },
@@ -45,13 +52,23 @@ function App() {
           setError("Geolocation not supported.");
         }
       } else {
-        if (!location) return setError("Please enter a city name.");
-        weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric`;
-        const response = await axios.get(weatherUrl);
-        handleWeatherData(response.data);
+        if (!location) {
+          setError("Please enter a city name.");
+          return;
+        }
+        weatherUrl = `https://agribot-jy5w.onrender.com/weather?city=${location}`;
+        console.log("Manual Location URL:", weatherUrl);
+        try {
+          const response = await axios.get(weatherUrl);
+          handleWeatherData(response.data);
+        } catch (err) {
+          setError("Failed to fetch weather data for the entered city.");
+          console.error("Manual Weather Fetch Error:", err);
+        }
       }
-    } catch {
-      setError("Failed to fetch weather data.");
+    } catch (err) {
+      setError("Unexpected error occurred while fetching weather.");
+      console.error("Weather Fetch Error:", err);
     }
   };
 
@@ -68,15 +85,27 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const queryParams = new URLSearchParams(formData).toString();
+
     try {
-      const response = await fetch(`http://127.0.0.1:8000/recommend?${queryParams}`, {
+      const response = await fetch("https://agribot-jy5w.onrender.com/recommend", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          N: parseFloat(formData.N),
+          P: parseFloat(formData.P),
+          K: parseFloat(formData.K),
+          temperature: parseFloat(formData.temperature),
+          humidity: parseFloat(formData.humidity),
+          ph: parseFloat(formData.ph),
+          rainfall: parseFloat(formData.rainfall),
+        }),
       });
+
       const data = await response.json();
-      setResult(data.recommended_crop);
-    } catch {
+      setResult(data.recommended_crop || "Error: Unexpected response");
+    } catch (error) {
       setResult("Error: Unable to fetch recommendation.");
+      console.error("Crop Recommendation Error:", error);
     }
   };
 
@@ -90,40 +119,27 @@ function App() {
       <main className="main">
         <div className="left-panel">
           <form onSubmit={handleSubmit} className="form">
-            <div className="form-group">
-              <label>N (Nitrogen):</label>
-              <input type="number" name="N" value={formData.N} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>P (Phosphorus):</label>
-              <input type="number" name="P" value={formData.P} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>K (Potassium):</label>
-              <input type="number" name="K" value={formData.K} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>Temperature (°C):</label>
-              <input type="number" name="temperature" value={formData.temperature} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>Humidity (%):</label>
-              <input type="number" name="humidity" value={formData.humidity} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>pH:</label>
-              <input type="number" name="ph" value={formData.ph} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label>Rainfall (mm):</label>
-              <input type="number" name="rainfall" value={formData.rainfall} onChange={handleChange} required />
-            </div>
+            {["N", "P", "K", "temperature", "humidity", "ph", "rainfall"].map((field) => (
+              <div className="form-group" key={field}>
+                <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                <input
+                  type="number"
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            ))}
 
             <div className="form-group location-buttons">
               <button
                 type="button"
                 className="location-toggle"
-                onClick={() => setIsLocationAuto(!isLocationAuto)}
+                onClick={() => {
+                  setIsLocationAuto(!isLocationAuto);
+                  setError("");
+                }}
               >
                 {isLocationAuto ? "Switch to Manual Location" : "Switch to Auto Location"}
               </button>
@@ -143,6 +159,8 @@ function App() {
 
             <button type="submit" className="submit-button">Get Recommendation</button>
           </form>
+
+          {error && <div className="error-message">{error}</div>}
 
           {result && (
             <div className="result">
