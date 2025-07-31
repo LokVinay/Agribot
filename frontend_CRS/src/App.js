@@ -56,7 +56,7 @@ function App() {
           setError("Please enter a city name.");
           return;
         }
-        weatherUrl = `https://agribot-jy5w.onrender.com/weather?city=${location}`;
+         weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
         console.log("Manual Location URL:", weatherUrl);
         try {
           const response = await axios.get(weatherUrl);
