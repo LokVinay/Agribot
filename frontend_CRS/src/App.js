@@ -25,7 +25,7 @@ function App() {
   };
 
   const fetchWeather = async () => {
-    const apiKey = process.env.REACT_APP_OPENWEATHER_API_KEY;
+    const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
 
     if (!apiKey) {
       setError("API key not found. Please check your .env file.");
