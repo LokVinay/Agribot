@@ -1,5 +1,32 @@
 # 🌱 Agriculture Crop Recommendation System
 
+--> Get Recommendation to see the best crop
+
+#🚀 Live Demo :
+Frontend: (https://agribot-xi.vercel.app/) (Vercel)
+
+Backend : (https://agribot-jy5w.onrender.com/) (Render)
+
+GitHub Repositories:
+
+Frontend + Backend: (https://github.com/LokVinay/Agribot)
+
+Alternate repo with combined code: (https://github.com/LokVinay/Agriculture_Crop_Recommendation_System)
+
+📸 Preview
+ 
+#🧠 Features:
+🌤️ Fetch weather automatically using location
+
+🌱 Predict crops using ML model
+
+📲 Responsive frontend (React.js)
+
+⚙️ FastAPI backend deployed on Render
+
+🌐 Deployed frontend on Vercel
+
+
 ## 👨‍💻 Contributors
 
 | Name            | GitHub Profile                                                   |
